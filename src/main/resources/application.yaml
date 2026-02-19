@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: franchise-management-api
+
+
+aws:
+  access-key: ${AWS_ACCESS_KEY}
+  secret-key: ${AWS_SECRET_KEY}
+  region: us-east-2
+  dynamodb:
+    table-name: Franchises
