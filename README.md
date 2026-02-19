@@ -41,25 +41,39 @@ cd franchise-management-api
 # Compilar el proyecto
 mvn clean install
 
+#despliega la tabla de DynamoDB automáticamente con este comando:
+Ejecute el siguiente comando para desplegar la base de datos y los roles necesarios:
+
+aws cloudformation deploy --template-file template.yaml --stack-name franchise-infra-stack --region us-east-2 --capabilities CAPABILITY_IAM
+  
 # Ejecutar la aplicación
 mvn spring-boot:run
 ```
 
-La API estará disponible en `http://localhost:8080`.
+La API estará disponible en `http://franchise-api-env.eba-r6mmp2he.us-east-2.elasticbeanstalk.com:8080`.
 
 ## 📋 Endpoints Principales
+## 🚀 API Endpoints
 
-### Franquicias
+La API sigue los principios REST y utiliza JSON como formato de intercambio de datos. A continuación se detallan los endpoints disponibles:
+
+### 🏢 Gestión de Franquicias y Sucursales
 | Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `GET` | `/api/franchises` | Obtener todas las franquicias |
-| `GET` | `/api/franchises/{id}` | Obtener una franquicia por ID |
-| `POST` | `/api/franchises` | Crear una nueva franquicia |
-| `PUT` | `/api/franchises/{id}` | Actualizar información de la franquicia |
-| `DELETE` | `/api/franchises/{id}` | Eliminar una franquicia |
-| `PUT` | `/api/franchises/{id}/name` | Actualizar nombre de la franquicia |
-| `PUT` | `/api/franchises/{id}/branches/{branchId}/stock` | Actualizar stock de producto en sucursal |
-| `GET` | `/api/franchises/{id}/branches/{branchId}/products/top-stock` | Obtener producto con mayor stock en una sucursal |
+| :--- | :--- | :--- |
+| `POST` | `/api/franchise` | Crear una nueva franquicia con sus sucursales y productos iniciales. |
+| `PUT` | `/api/franchise/{id}/name` | Actualizar el nombre de una franquicia existente. |
+| `POST` | `/api/franchise/{id}/branch` | Agregar una nueva sucursal a una franquicia específica. |
+| `PUT` | `/api/franchise/{id}/branch/{branchName}/name` | Actualizar el nombre de una sucursal. |
+
+### 📦 Gestión de Productos y Stock
+| Método | Endpoint | Descripción |
+| :--- | :--- | :--- |
+| `POST` | `/api/franchise/{id}/branch/{branchName}/product` | Agregar un nuevo producto a una sucursal específica. |
+| `DELETE` | `/api/franchise/{id}/branch/{branchName}/product/{productName}` | Eliminar un producto de una sucursal. |
+| `PUT` | `/api/franchise/{id}/branch/{branchName}/product/{productName}/stock` | **Requerimiento:** Modificar el stock de un producto específico. |
+| `GET` | `/api/franchise/{id}/max-stock` | **Requerimiento:** Obtener el producto con mayor stock por cada sucursal de una franquicia. |
+
+---
 
 ## 📦 Estructura del Proyecto
 ```
@@ -75,7 +89,7 @@ src/
 │   │   │   ├── dto/
 │   │   │   │   ├── NameUpdateDTO.java
 │   │   │   │   ├── StockUpdateDTO.java
-│   │   │   │   └── TopStockProductResponse.java
+│   │   │   │   
 │   │   │   ├── ports/
 │   │   │   │   └── in/
 │   │   │   │       └── FranchiseUseCase.java
@@ -112,7 +126,16 @@ mvn test jacoco:report
 
 ## 📝 Ejemplos de Uso
 
-### Crear una Franquicia
+
+### 1. Crear una Franquicia (Inicial)
+**POST** `/api/franchise`
+```json
+{
+  "name": "Franquicia Accenture Bogota",
+  "branches": []
+}
+
+### Crear una Franquicia con Sucursal y Producto Inicial
 ```json
 POST /api/franchises
 {
@@ -120,7 +143,6 @@ POST /api/franchises
   "branches": [
     {
       "name": "Sucursal Centro",
-      "address": "Calle Principal 123",
       "products": [
         {
           "name": "Producto A",

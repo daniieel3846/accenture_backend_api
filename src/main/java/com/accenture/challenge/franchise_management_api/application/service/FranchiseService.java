@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -113,25 +114,34 @@ public class FranchiseService implements FranchiseUseCase {
     public Flux<TopStockProductResponse> getTopStockProductsByFranchise(String franchiseId) {
         return franchiseRepositoryPort.findById(franchiseId)
                 .flatMapMany(franchise -> {
-                    if (franchise.getBranches() == null) {
+                    if (franchise.getBranches() == null || franchise.getBranches().isEmpty()) {
                         return Flux.empty();
                     }
 
                     return Flux.fromIterable(franchise.getBranches())
                             .map(branch -> {
-                                Product topProduct = branch.getProducts().stream()
-                                        .filter(p -> p.getStock() != null)
+                                List<Product> products = (branch.getProducts() != null)
+                                        ? branch.getProducts()
+                                        : java.util.Collections.emptyList();
+
+                                Product topProduct = products.stream()
+                                        .filter(p -> p != null && p.getStock() != null)
                                         .max(java.util.Comparator.comparing(Product::getStock))
-                                        .orElse(new Product());
+                                        .orElse(null);
 
                                 return new TopStockProductResponse(
                                         branch.getName(),
-                                        topProduct.getName() != null ? topProduct.getName() : "Sin productos",
-                                        topProduct.getStock() != null ? topProduct.getStock() : 0
+                                        (topProduct != null && topProduct.getName() != null) ? topProduct.getName() : "Sin productos",
+                                        (topProduct != null && topProduct.getStock() != null) ? topProduct.getStock() : 0
                                 );
                             });
                 })
-                .switchIfEmpty(Mono.error(new RuntimeException("Franquicia no encontrada")));
+                .collectList()
+                .flatMapMany(list -> {
+                    list.sort(java.util.Comparator.comparingInt(TopStockProductResponse::getStock).reversed());
+                    return Flux.fromIterable(list);
+                })
+                .switchIfEmpty(Mono.error(new RuntimeException("Franquicia no encontrada o sin datos")));
     }
 
     @Override
