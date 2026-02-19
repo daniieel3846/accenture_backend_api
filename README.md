@@ -158,7 +158,6 @@ POST /api/franchises
 ```json
 PUT /api/franchises/{franchiseId}/branches/{branchId}/stock
 {
-  "productName": "Producto A",
   "newStock": 150
 }
 ```
