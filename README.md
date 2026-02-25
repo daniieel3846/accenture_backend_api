@@ -50,7 +50,7 @@ aws cloudformation deploy --template-file template.yaml --stack-name franchise-i
 mvn spring-boot:run
 ```
 
-La API estará disponible en `http://franchise-api-env.eba-r6mmp2he.us-east-2.elasticbeanstalk.com:8080`.
+La API estará disponible en `http://http://api-accenture-env.eba-vdtmss4q.us-east-2.elasticbeanstalk.com:8080`.
 
 ## 📋 Endpoints Principales
 ## 🚀 API Endpoints
